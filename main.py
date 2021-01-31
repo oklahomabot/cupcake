@@ -4,17 +4,18 @@ import requests
 import json
 import random
 from replit import db
+from web import persist
 
 
 client = discord.Client()
 
 sad_words = ['sad', 'depressed', 'unhappy', 'miserable', 'depressing', 'cry', 'angry',
-             'upset', 'pissed', 'worried', 'scared']
+             'upset', 'pissed', 'worried', 'scared', 'terrified']
 
 starter_encouragements = [
-  'Cheer up!',
-  'Hang in there.',
-  'You are a great person / bot!'
+  'Cheer up',
+  'Hang in there',
+  'You are a great person / bot'
 ]
 # Helper Function
 def get_quote():
@@ -115,6 +116,7 @@ async def on_message(message):
 
   if db['responding']:
     if any(word in msg for word in sad_words):
-      await message.channel.send(random.choice(options))
+      await message.channel.send(f'{random.choice(options)} {message.author.name}')
 
+persist()
 client.run(os.getenv('dTOKEN'))
