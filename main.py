@@ -9,7 +9,7 @@ from discord.ext import commands
 
 client = commands.Bot(command_prefix='$')
 
-cogs = ['bigmess']
+cogs = ['bigmess','secret']
 
 # cog loader
 for cog in cogs:
