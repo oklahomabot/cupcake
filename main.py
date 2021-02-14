@@ -7,7 +7,7 @@ from replit import db
 from web import start_web
 from discord.ext import commands
 
-client = commands.Bot(command_prefix='$')
+client = commands.Bot(command_prefix='cc-')
 
 cogs = ['bigmess']
 
@@ -20,9 +20,10 @@ for cog in cogs:
     else:
         print(f'{cog} cog loaded')
 
+
 @client.event
 async def on_ready():
-  print('We have logged in as {0.user}'.format(client))
+    print('We have logged in as {0.user}'.format(client))
 #  update_message('We have logged in as {0.user}'.format(client))
 
 

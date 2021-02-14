@@ -132,3 +132,4 @@ dmypy.json
 lib/bot/token.0
 junk.*
 test.*
+workspace.code-workspace
