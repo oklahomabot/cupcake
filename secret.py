@@ -2,6 +2,7 @@ import discord
 import sys
 from discord.ext import commands
 from replit import db
+from PIL import Image, ImageColor
 
 
 class secret(commands.Cog):
@@ -19,15 +20,16 @@ class secret(commands.Cog):
         embed = discord.Embed(title='SECRET TITLE', colour=discord.Colour(
             0xE5E242), description=description)
 
-        embed.set_image(
-            url="https://images.pexels.com/photos/3156660/pexels-photo-3156660.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500")
-        embed.set_thumbnail(url=ctx.message.author.avatar_url_as(size=64))
+        make_embed(50)
+        file = discord.File('./templates/embedpic.jpeg')
+        embed.set_image(url="attachment://embedpic.jpeg")
 
+        embed.set_thumbnail(url=ctx.message.author.avatar_url_as(size=64))
         await ctx.channel.purge(limit=1)
-        await ctx.send(embed=embed)
+        await ctx.send(file=file, embed=embed)
 
     @commands.Cog.listener("on_message")
-    @commands.cooldown(1, 5, commands.BucketType.channel)
+    # @commands.cooldown(1, 5, commands.BucketType.channel)
     async def rankdoor(self, message):
 
         if message.author.bot:
@@ -199,6 +201,25 @@ def inspect_records(pre=''):
         return f'{len(matches)} db rows processed my MASTER'
     else:
         return f'{len(matches)} db rows processed using prefix {pre} my MASTER'
+
+
+def get_bar(percentage=50, size=(300, 25), fill_color='blue'):
+    '''
+    This function returns a rectangular image based on percentage (0-100)
+    "filled in" from left->right using the fill_color
+    '''
+    empty_bar = Image.new('RGB', size, ImageColor.getrgb('white'))
+    fill_bar = Image.new(
+        'RGB', ((size[0]*percentage)//100, size[1]), ImageColor.getrgb(fill_color))
+    empty_bar.paste(fill_bar)
+
+    return empty_bar
+
+
+def make_embed(percentage=50):
+    background = Image.open('./templates/background.jpeg')
+    background.paste(get_bar(percentage))
+    background.save('./templates/embedpic.jpeg')
 
 
 def setup(client):
