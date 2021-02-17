@@ -32,6 +32,7 @@ class dbstuff(commands.Cog):
     def __init__(self, client):
         self.client = client
 
+    '''
     @commands.command(aliases=['listexp', 'list_exp'], hidden=False)
     async def make_exp_list(self, ctx, qty=3):
         if ctx.message.author.id not in [793433316258480128, 790459205038506055]:
@@ -53,6 +54,7 @@ class dbstuff(commands.Cog):
                 name=f"Field {index + 1} Title", value=record, inline=False)
 
         await ctx.send(embed=embed)
+    '''
 
     @commands.command(aliases=['myguilds', 'my_guilds'], hidden=False)
     async def list_guilds(self, ctx):
@@ -102,15 +104,26 @@ class dbstuff(commands.Cog):
         else:
             await ctx.send(f'Looked for {gid}/{uid} : result - RECORD NOT FOUND in db')
 
+    @commands.Cog.listener("on_message")
+    async def msgcount(self, message):
+        if message.author == self.client or message.author.bot:
+            return
 
-def get_data(qty=2):
-    my_fake_data = ['Fake Person 1 with 10 exp',
-                    'Fake Person 2 with 250 exp', 'Fake Person 3 with 305 exp']
-    return my_fake_data
+        if not user_exists(message.guild.id, message.author.id):
+            # make new user
+            tmpuser = CCuser(message.guild.id,
+                             message.author.id, name=message.author.name)
+            add_new_user(tmpuser)
+
+        tmpuser = get_user(message.guild.id, message.author.id)
+        tmpuser.msgcount += 1
+        tmpuser.exp += 5
+        save_user(tmpuser)
+        print(f'User {message.author} in guild {message.guild} sent a message')
+        # add_exp(message.guild)
+
 
 # SQLite Database Stuff
-
-
 # Creates connection to db in current directory
 conn = sqlite3.connect('cupcake.db')
 # Creates a cursor
@@ -172,17 +185,30 @@ def get_user(guildID=None, userID=None):
         return CCuserOBJECT
 
 
+def add_new_user(user: CCuser):
+    with conn:
+        text = f"INSERT OR IGNORE INTO users VALUES (?, ?, ?, ?, ?, ?)"
+        c.execute(text, (user.guildid, user.id, str(user.name), user.exp,
+                         user.level, user.msgcount))
+
+
 def save_user(user: CCuser):
     # takes CCuser object and updates db
     with conn:
-        text = f"UPDATE users VALUES (?, ?, ?, ?, ?, ?)"
-        c.execute(text, (user.guildid, user.id, user.name, user.exp,
-                         user.level, user.msgcount))
+        text = f'UPDATE users SET guildID = {user.guildid}, userID = {user.id}, name = \"{user.name}\",'
+        text = text + \
+            f'exp = {user.exp}, explevel = {user.level}, msgcount = {user.msgcount} '
+        text = text + f'WHERE guildID = {user.guildid} AND userID = {user.id}'
+        # print('save_user running SQL')
+        # print(text)
+        c.execute(text)
 
 
 # Close database connection
 # conn.close()
 
 # Cog setup command
+
+
 def setup(client):
     client.add_cog(dbstuff(client))

@@ -1,9 +1,7 @@
-from dbstuff import CCguild, CCuser, add_guild_if_new
+from dbstuff import CCguild, add_guild_if_new
 from secret import add_exp
 import discord
 import os
-import random
-from web import start_web
 from discord.ext import commands
 from dotenv import load_dotenv
 import sqlite3
@@ -24,17 +22,18 @@ for cog in cogs:
         print(f'{cog} cog loaded')
 
 
-@client.event
-async def on_ready():
-    print('We have logged in as {0.user}'.format(client))
-    # populate guilds in console for testing
+async def load_guilds():
     print('CupCake guilds :')
     async for guild in client.fetch_guilds(limit=150):
         tmp = CCguild(guild.id, name=guild.name)
         add_guild_if_new(tmp)
-        print(
-            f'Attempted to add {guild.name} : {guild.id} in db')
+        print(f'Attempted to add {guild.name} : {guild.id} in db')
 
+
+@client.event
+async def on_ready():
+    print('We have logged in as {0.user}'.format(client))
+    await load_guilds()
 
 # start_web()
 load_dotenv()
