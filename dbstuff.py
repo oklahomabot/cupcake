@@ -1,4 +1,3 @@
-import os
 import discord
 from discord.ext import commands
 import sqlite3
@@ -76,13 +75,32 @@ class dbstuff(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    @commands.command(aliases=['finduser', 'userexists'], hidden=False)
+    async def dbfinduser(self, ctx, gid=None, uid=None):
+        if ctx.message.author.id not in [793433316258480128, 790459205038506055]:
+            await ctx.send(f'You are not authorized to run this command {ctx.message.author.id}')
+            return
+        if not (gid and uid):
+            await ctx.send(f'GuildID and UserID must be provided')
+            return
 
-'''
-    async def db_populate_guilds(self):
-        print('My guilds : ', end='')
-        async for guild in self.client.fetch_guilds(limit=150):
-            print(f'{guild.name}')
-'''
+        if user_exists(gid, uid):
+            info = get_user(gid, uid)
+            # guild = info[0]
+            # userid = info[1]
+            # name = info[2]
+            # exp = info[3]
+            # level = info[4]
+            # msgcount = info[5]
+            temp = ((f'User Name : {info.name}\nEXP : {info.exp}\nLEVEL : {info.level}\t') +
+                    (f'Message Count : {info.msgcount}'))
+            embed = discord.Embed(
+                title='SAVED DATA', description=f'db record in tbl users', colour=discord.Colour.blue())
+            embed.add_field(
+                name=f'Guild/User IDs : {info.guildid}/{info.id}', value=temp)
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(f'Looked for {gid}/{uid} : result - RECORD NOT FOUND in db')
 
 
 def get_data(qty=2):
@@ -118,16 +136,22 @@ c.execute("INSERT INTO users VALUES(1001,'Steve',100)")
 conn.commit()
 
 
-
 def new_user(guildid, userid, name):
     with conn:
         pass
 
-
-def new_guild(guild):
-    with conn:
-        pass
 '''
+
+
+def user_exists(guildID, userID):
+    # returns boolean if guild/user record found in db table users
+    with conn:
+        c.execute(
+            f"SELECT COUNT(*) from users WHERE guildID={guildID} AND userID={userID}")
+        if c.fetchone()[0] >= 1:
+            return True
+        else:
+            return False
 
 
 def add_guild_if_new(g: CCguild):
@@ -136,11 +160,29 @@ def add_guild_if_new(g: CCguild):
         c.execute(text, (g.id, g.name, g.home, g.owner, g.listen))
 
 
+def get_user(guildID=None, userID=None):
+    # returns CCuser object from db data
+    # creates record if non exists
+    with conn:
+        c.execute(
+            f"SELECT * from users WHERE guildID={guildID} AND userID={userID}")
+        result = c.fetchone()
+        CCuserOBJECT = CCuser(result[0], result[1],
+                              result[2], result[3], result[4], result[5])
+        return CCuserOBJECT
+
+
+def save_user(user: CCuser):
+    # takes CCuser object and updates db
+    with conn:
+        text = f"UPDATE users VALUES (?, ?, ?, ?, ?, ?)"
+        c.execute(text, (user.guildid, user.id, user.name, user.exp,
+                         user.level, user.msgcount))
+
+
 # Close database connection
 # conn.close()
 
 # Cog setup command
-
-
 def setup(client):
     client.add_cog(dbstuff(client))

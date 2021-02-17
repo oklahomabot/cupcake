@@ -1,7 +1,6 @@
 import discord
 import sys
 from discord.ext import commands
-from replit import db
 from PIL import Image, ImageColor
 
 
