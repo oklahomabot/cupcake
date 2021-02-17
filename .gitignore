@@ -133,3 +133,4 @@ lib/bot/token.0
 junk.*
 test.*
 workspace.code-workspace
+cupcake.db
