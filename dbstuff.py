@@ -77,7 +77,7 @@ class dbstuff(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=['finduser', 'userexists'], hidden=False)
+    @commands.command(aliases=['finduser', 'userexists'], hidden=True)
     async def dbfinduser(self, ctx, gid=None, uid=None):
         if ctx.message.author.id not in [793433316258480128, 790459205038506055]:
             await ctx.send(f'You are not authorized to run this command {ctx.message.author.id}')
@@ -88,12 +88,6 @@ class dbstuff(commands.Cog):
 
         if user_exists(gid, uid):
             info = get_user(gid, uid)
-            # guild = info[0]
-            # userid = info[1]
-            # name = info[2]
-            # exp = info[3]
-            # level = info[4]
-            # msgcount = info[5]
             temp = ((f'User Name : {info.name}\nEXP : {info.exp}\nLEVEL : {info.level}\t') +
                     (f'Message Count : {info.msgcount}'))
             embed = discord.Embed(
@@ -115,12 +109,29 @@ class dbstuff(commands.Cog):
                              message.author.id, name=message.author.name)
             add_new_user(tmpuser)
 
+        # perform per message activities (exp/level/msgcount)
         tmpuser = get_user(message.guild.id, message.author.id)
         tmpuser.msgcount += 1
+        # check for exp level promotion
+        if exp_level(tmpuser.level+1) - tmpuser.exp <= 5:
+            tmpuser.level += 1
+            await message.channel.send(
+                f'Congratulations {message.author.name}! You have promoted to exp level {tmpuser.level +1}')
         tmpuser.exp += 5
         save_user(tmpuser)
-        print(f'User {message.author} in guild {message.guild} sent a message')
-        # add_exp(message.guild)
+        print(
+            f'User {message.author.name} in guild {message.guild} sent a message')
+
+# Helper Functions
+
+
+def exp_level(level=0):
+    '''
+    Returns base exp value for exp level
+    '''
+    level_dic = {0: 0, 1: 100, 2: 220, 3: 350, 4: 500, 5: 675, 6: 875,
+                 7: 1125, 8: 1450, 9: 1850, 10: 2600, 11: 3600, 12: 10000, 13: 1000000}
+    return level_dic[level]
 
 
 # SQLite Database Stuff
@@ -199,7 +210,7 @@ def save_user(user: CCuser):
         text = text + \
             f'exp = {user.exp}, explevel = {user.level}, msgcount = {user.msgcount} '
         text = text + f'WHERE guildID = {user.guildid} AND userID = {user.id}'
-        # print('save_user running SQL')
+        # print('save_user UPDATING db')
         # print(text)
         c.execute(text)
 
