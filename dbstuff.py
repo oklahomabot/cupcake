@@ -5,10 +5,11 @@ import sqlite3
 
 
 class CCguild():
-    def __init__(self, guildid, name='Not Set', home=0, listen=0):
-        self.guildid = guildid
+    def __init__(self, id, name='Not Set', home=0, owner='Not Saved', listen=0):
+        self.id = id
         self.name = name
         self.home = home
+        self.owner = owner
         self.listen = listen
 
     def __str__(self):
@@ -63,7 +64,8 @@ class dbstuff(commands.Cog):
         temp_txt, index = '', 0
         async for guild in self.client.fetch_guilds(limit=150):
             index += 1
-            temp_txt = temp_txt + f'**{index})** {guild.name}\n'
+            temp_txt = temp_txt + \
+                f'**{index})** {guild.name}\n'
         embed = discord.Embed(title=f"{self.client.user.display_name}\'s Guilds", colour=discord.Colour(
             0xE5E242), description=temp_txt)
 
@@ -92,9 +94,9 @@ def get_data(qty=2):
 
 
 # Creates connection to db in current directory
-# conn = sqlite3.connect('cupcake.db')
+conn = sqlite3.connect('cupcake.db')
 # Creates a cursor
-# c = conn.cursor()
+c = conn.cursor()
 '''
 # Create a table (run once)
 c.execute("""CREATE TABLE "users" (
@@ -128,9 +130,11 @@ def new_guild(guild):
 '''
 
 
-def guild_exists(guildid):
-    # with conn:
-    return f'Checking for guild {guildid} in db'
+def add_guild_if_new(g: CCguild):
+    with conn:
+        text = f"INSERT OR IGNORE INTO guilds VALUES (?, ?, ?, ?, ?)"
+        c.execute(text, (g.id, g.name, g.home, g.owner, g.listen))
+
 
 # Close database connection
 # conn.close()
