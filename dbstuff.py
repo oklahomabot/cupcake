@@ -78,25 +78,32 @@ class dbstuff(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(aliases=['finduser', 'userexists'], hidden=True)
-    async def dbfinduser(self, ctx, gid=None, uid=None):
+    async def dbfinduser(self, ctx, user: discord.User = None):
         if ctx.message.author.id not in [793433316258480128, 790459205038506055]:
             await ctx.send(f'You are not authorized to run this command {ctx.message.author.id}')
             return
-        if not (gid and uid):
-            await ctx.send(f'GuildID and UserID must be provided')
-            return
 
-        if user_exists(gid, uid):
-            info = get_user(gid, uid)
-            temp = ((f'User Name : {info.name}\nEXP : {info.exp}\nLEVEL : {info.level}\t') +
-                    (f'Message Count : {info.msgcount}'))
+        if not user:
+            user = ctx.message.author
+
+        if user_exists(ctx.guild.id, user.id):
+            info = get_user(ctx.guild.id, user.id)
             embed = discord.Embed(
-                title='SAVED DATA', description=f'db record in tbl users', colour=discord.Colour.blue())
-            embed.add_field(
-                name=f'Guild/User IDs : {info.guildid}/{info.id}', value=temp)
-            await ctx.send(embed=embed)
+                title='Userinfo', description=f'misc. info about {user.name} in {ctx.guild}', colour=discord.Colour.blue())
+            temp = ''
+            temp = ((f'- ID: {user.id}\n') +
+                    (f'- MsgCount: {info.msgcount}\n') +
+                    (f'- Exp Points: {info.exp}\n') +
+                    (f'- Exp Level: {info.level}\n') +
+                    ('- Is User a bot?: '))
+            temp = temp + ('YES' if user.bot else 'NO')
+            embed.add_field(name=user, value=temp)
+            if user.avatar is not None:
+                embed.set_thumbnail(url=user.avatar_url_as(size=64))
+
+            await ctx.send(':mag:', embed=embed)
         else:
-            await ctx.send(f'Looked for {gid}/{uid} : result - RECORD NOT FOUND in db')
+            await ctx.send(f'Looked for {user.name} on server {ctx.guild.name} : result - RECORD NOT FOUND in db')
 
     @commands.Cog.listener("on_message")
     async def msgcount(self, message):
