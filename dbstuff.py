@@ -1,3 +1,4 @@
+
 import discord
 from discord.ext import commands
 import sqlite3
@@ -159,7 +160,7 @@ def top_exp(guildID=None, how_many: int = 3):
         result = c.fetchall()
         # sort by second element of tuple (exp)
         result.sort(key=lambda x: x[1], reverse=True)
-        print(result)
+        # print(result)
         if len(result) <= how_many:
             return result
         else:

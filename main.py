@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 prefix = 'cc-'
 client = commands.Bot(command_prefix=prefix)
 
+# add check for db exists, if not create it
+
 #cogs = ['bigmess', 'secret']
 cogs = ['dbstuff']
 
