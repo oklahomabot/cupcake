@@ -32,35 +32,9 @@ class dbstuff(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    '''
-    @commands.command(aliases=['listexp', 'list_exp'], hidden=False)
-    async def make_exp_list(self, ctx, qty=3):
-        if ctx.message.author.id not in [793433316258480128, 790459205038506055]:
-            await ctx.send(f'You are not authorized to run this command {ctx.message.author.id}')
-            return
-
-        await ctx.channel.purge(limit=1)
-        embed = discord.Embed(title='SECRET TITLE', colour=discord.Colour(
-            0xE5E242), description='\<description in embed\>')
-
-        embed.set_image(
-            url="https://images.pexels.com/photos/1148820/pexels-photo-1148820.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260")
-
-        embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
-
-        # adds a field name for each result in query
-        for index, record in enumerate(get_data(qty)):
-            embed.add_field(
-                name=f"Field {index + 1} Title", value=record, inline=False)
-
-        await ctx.send(embed=embed)
-    '''
-
-    @commands.command(aliases=['myguilds', 'my_guilds'], hidden=False)
+    @commands.command(aliases=['myguilds', 'my_guilds', 'listguilds'], hidden=False)
     async def list_guilds(self, ctx):
-        if ctx.message.author.id not in [793433316258480128, 790459205038506055]:
-            await ctx.send(f'You are not authorized to run this command {ctx.message.author.id}')
-            return
+        ''' Returns a list of servers where Cupcake is a member '''
 
         temp_txt, index = '', 0
         async for guild in self.client.fetch_guilds(limit=150):
@@ -77,19 +51,19 @@ class dbstuff(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=['finduser', 'userexists'], hidden=True)
-    async def dbfinduser(self, ctx, user: discord.User = None):
-        if ctx.message.author.id not in [793433316258480128, 790459205038506055]:
-            await ctx.send(f'You are not authorized to run this command {ctx.message.author.id}')
-            return
-
+    @commands.command(aliases=['finduser', 'listuser', 'userinfo'], hidden=False)
+    async def user_info(self, ctx, user: discord.User = None):
+        '''
+        Returns stats about a user on current server.
+        If no user given returns message author's stats
+        '''
         if not user:
             user = ctx.message.author
 
         if user_exists(ctx.guild.id, user.id):
             info = get_user(ctx.guild.id, user.id)
             embed = discord.Embed(
-                title='Userinfo', description=f'misc. info about {user.name} in {ctx.guild}', colour=discord.Colour.blue())
+                title=f'{user.name}', colour=discord.Colour.blue())
             temp = ''
             temp = ((f'- ID: {user.id}\n') +
                     (f'- MsgCount: {info.msgcount}\n') +
@@ -97,11 +71,13 @@ class dbstuff(commands.Cog):
                     (f'- Exp Level: {info.level}\n') +
                     ('- Is User a bot?: '))
             temp = temp + ('YES' if user.bot else 'NO')
-            embed.add_field(name=user, value=temp)
+            embed.add_field(name=f'{ctx.guild} STATS', value=temp)
+            embed.set_image(
+                url='https://images.pexels.com/photos/3769697/pexels-photo-3769697.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260')
             if user.avatar is not None:
                 embed.set_thumbnail(url=user.avatar_url_as(size=64))
 
-            await ctx.send(':mag:', embed=embed)
+            await ctx.send(embed=embed)
         else:
             await ctx.send(f'Looked for {user.name} on server {ctx.guild.name} : result - RECORD NOT FOUND in db')
 
@@ -126,9 +102,32 @@ class dbstuff(commands.Cog):
                 f'Congratulations {message.author.name}! You have promoted to exp level {tmpuser.level +1}')
         tmpuser.exp += 5
         save_user(tmpuser)
-        print(
-            f'User {message.author.name} in guild {message.guild} sent a message')
+        # print(f'User {message.author.name} in guild {message.guild} sent a message')
 
+    @commands.command(aliases=['top', 'TOP', 'leaders'], hidden=False)
+    async def top_points(self, ctx, how_many: int = 3):
+        ''' 
+        Reports in chat top exp earners on this server
+        A value of 1-10 may be used for how many users
+        you want on the list
+        '''
+        if (1 <= how_many <= 10):
+            tmp_str = ''
+            tmp_list = top_exp(ctx.guild.id, how_many)
+
+            embed = discord.Embed(
+                title=f'TOP {len(tmp_list)} Users', description='(EXPERIENCE POINTS)', colour=discord.Colour.blue())
+            for tpl in tmp_list:
+                embed.add_field(
+                    name=f'{tpl[0][:17]}', value=f'EXP : **{tpl[1]}** LEVEL : {tpl[2]}')
+            embed.set_image(
+                url='https://images.pexels.com/photos/5731842/pexels-photo-5731842.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260')
+            if ctx.message.author.avatar is not None:
+                embed.set_thumbnail(
+                    url=ctx.message.author.avatar_url_as(size=64))
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(f'{how_many} invalid - Please use a whole number 1-10 or leave blank for top 3')
 # Helper Functions
 
 
@@ -137,7 +136,7 @@ def exp_level(level=0):
     Returns base exp value for exp level
     '''
     level_dic = {0: 0, 1: 100, 2: 220, 3: 350, 4: 500, 5: 675, 6: 875,
-                 7: 1125, 8: 1450, 9: 1850, 10: 2600, 11: 3600, 12: 10000, 13: 1000000}
+                 7: 1125, 8: 1450, 9: 1850, 10: 2600, 11: 3600, 12: 4800, 13: 6300, 14: 8000, 15: 10000, 16: 1000000}
     return level_dic[level]
 
 
@@ -146,35 +145,28 @@ def exp_level(level=0):
 conn = sqlite3.connect('cupcake.db')
 # Creates a cursor
 c = conn.cursor()
-'''
-# Create a table (run once)
-c.execute("""CREATE TABLE "users" (
-	"ID"	integer,
-	"NAME"	text DEFAULT 'No Name',
-	"EXP"	integer DEFAULT 0,
-	"LEVEL"	INTEGER DEFAULT 0,
-	PRIMARY KEY("ID")
-)""")
-# Add A Record
-c.execute("INSERT INTO users VALUES(1001,'Steve',100)")
-
-# Retrieve Information
-# c.execute("SELECT * FROM users")
-# options are fetchone / fetchmany(num) / fetchall
-# c.fetchall()
-
-# Commit our changes
-conn.commit()
 
 
-def new_user(guildid, userid, name):
+def top_exp(guildID=None, how_many: int = 3):
+    ''' queries db and returns list username/point/level tuples '''
+    if not guildID:
+        return
+    if not(10 >= how_many >= 1):
+        how_many = 3
     with conn:
-        pass
+        c.execute(
+            f"SELECT name, exp, explevel from users WHERE guildID={guildID}")
+        result = c.fetchall()
+        # sort by second element of tuple (exp)
+        result.sort(key=lambda x: x[1], reverse=True)
+        print(result)
+        if len(result) <= how_many:
+            return result
+        else:
+            return result[:how_many]
 
-'''
 
-
-def user_exists(guildID, userID):
+def user_exists(guildID=-1, userID=-1):
     # returns boolean if guild/user record found in db table users
     with conn:
         c.execute(
@@ -225,8 +217,6 @@ def save_user(user: CCuser):
 # Close database connection
 # conn.close()
 
-# Cog setup command
 
-
-def setup(client):
+def setup(client):  # Cog setup command
     client.add_cog(dbstuff(client))

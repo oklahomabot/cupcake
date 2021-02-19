@@ -1,13 +1,11 @@
 from dbstuff import CCguild, add_guild_if_new
-from secret import add_exp
 import discord
 import os
 from discord.ext import commands
 from dotenv import load_dotenv
-import sqlite3
 
-
-client = commands.Bot(command_prefix='cc-')
+prefix = 'cc-'
+client = commands.Bot(command_prefix=prefix)
 
 #cogs = ['bigmess', 'secret']
 cogs = ['dbstuff']
@@ -33,6 +31,7 @@ async def load_guilds():
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="for cc- command"))
     await load_guilds()
 
 # start_web()
