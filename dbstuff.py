@@ -1,4 +1,3 @@
-
 import discord
 from discord.ext import commands
 import sqlite3
@@ -141,7 +140,7 @@ def exp_level(level=0):
     return level_dic[level]
 
 
-# SQLite Database Stuff
+''' SQLite3 Database Stuff '''
 # Creates connection to db in current directory
 conn = sqlite3.connect('cupcake.db')
 # Creates a cursor

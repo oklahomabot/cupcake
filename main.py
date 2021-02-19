@@ -39,3 +39,6 @@ async def on_ready():
 # start_web()
 load_dotenv()
 client.run(os.getenv('dTOKEN'))
+
+# Next step is to handle errors that just show in console for bad argument types passed through commands
+# User not found is the most common one invoked, but we need a solid error catch and response
