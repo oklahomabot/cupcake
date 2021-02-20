@@ -147,10 +147,9 @@ class dbstuff(commands.Cog):
 
         # Insert embed creation from member info here
         embed = discord.Embed(
-            title=f'{tmp_member.name}', description='**SIMPLY THE BEST AROUND**', colour=discord.Colour.blue())
-        embed.set_image(
-            url='https://images.pexels.com/photos/55825/gold-bear-gummi-bears-bear-yellow-55825.jpeg?cs=srgb&dl=pexels-pixabay-55825.jpg&fm=jpg')
-        embed.set_thumbnail(url=tmp_member.avatar_url_as(size=64))
+            title=f':star_struck: {tmp_member.name} :star_struck: ', description='**SIMPLY THE BEST AROUND**', colour=discord.Colour.blue())
+        embed.set_image(url=tmp_member.avatar_url)
+        embed.set_thumbnail(url=self.client.user.avatar_url_as(size=64))
         await ctx.send(embed=embed)
         # await ctx.send(f'Everyone knows <{tmp_member.name}> is Number One! :smile:')
 
