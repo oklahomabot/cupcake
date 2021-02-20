@@ -32,7 +32,7 @@ class dbstuff(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.command(aliases=['myguilds', 'my_guilds', 'listguilds'], hidden=False)
+    @commands.command(aliases=['guilds', 'my_guilds', 'listguilds', 'servers', 'my_servers'], hidden=False)
     async def list_guilds(self, ctx):
         ''' Returns a list of servers where Cupcake is a member '''
 
@@ -41,7 +41,7 @@ class dbstuff(commands.Cog):
             index += 1
             temp_txt = temp_txt + \
                 f'**{index})** {guild.name}\n'
-        embed = discord.Embed(title=f"{self.client.user.display_name}\'s Guilds", colour=discord.Colour(
+        embed = discord.Embed(title=f"{self.client.user.display_name}\'s Servers", colour=discord.Colour(
             0xE5E242), description=temp_txt)
 
         embed.set_image(
@@ -128,6 +128,31 @@ class dbstuff(commands.Cog):
             await ctx.send(embed=embed)
         else:
             await ctx.send(f'{how_many} invalid - Please use a whole number 1-10 or leave blank for top 3')
+
+    @commands.command(aliases=['num1', 'best'], hidden=False)
+    async def number_one(self, ctx, person=None):
+        ''' Cupcake decides who is the best '''
+
+        if not person and ctx.guild.id == 790518150306332673:  # Sweetie is best on my server
+            tmp_member = await commands.converter.MemberConverter().convert(ctx, 'SweetieCakesMel#9791')
+        else:
+            if (not person) or (person in ['me', 'ME']):
+                tmp_member = ctx.message.author
+            else:
+                try:
+                    tmp_member = await commands.converter.MemberConverter().convert(ctx, person)
+                except:
+                    await ctx.send(f"I don\'t know {person}, lets just say **YOU** are the best.")
+                    tmp_member = ctx.message.author
+
+        # Insert embed creation from member info here
+        embed = discord.Embed(
+            title=f':star_struck: {tmp_member.name} :star_struck: ', description='**SIMPLY THE BEST AROUND**', colour=discord.Colour.blue())
+        embed.set_image(url=tmp_member.avatar_url)
+        embed.set_thumbnail(url=self.client.user.avatar_url_as(size=64))
+        await ctx.send(embed=embed)
+        # await ctx.send(f'Everyone knows <{tmp_member.name}> is Number One! :smile:')
+
 # Helper Functions
 
 
